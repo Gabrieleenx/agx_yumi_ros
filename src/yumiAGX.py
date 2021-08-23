@@ -236,7 +236,7 @@ def buildScene():
     sim.add(yumi_assembly_ref.get())
     fl = agxOSG.createVisual(yumi_assembly_ref.get(), root)
 
-    # Create the yumi robot representation with a ROS2 subscriber
+    # Create the yumi robot representation with a ROS subscriber
     yumi = yumiRobot(yumi_assembly_ref.get())
     sim.add(yumi)
 
