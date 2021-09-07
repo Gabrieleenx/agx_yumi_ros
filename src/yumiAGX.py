@@ -33,6 +33,19 @@ except Exception as e:
 from agxPythonModules.utils.environment import simulation, root, application, init_app
 
 
+def rigidBodyGeometriesToList(rb):
+    geometries = rb.getGeometries() # geometries is of type GeometryRefVector
+    geometries_list = list()        # the list to return
+    for geo_ref in geometries:      # geometries contain items of type GeometryRef
+        geometries_list.append(geo_ref.get()) # geo_ref.get() gives us its Geometry
+    return geometries_list            # geometries_list now contain Geometry items
+
+
+def collisionBetweenBodies(RB1, RB2, collision=True):
+    for i in range(len(RB1.getGeometries())):
+        for j in range(len(RB2.getGeometries())):
+            RB1.getGeometries()[i].setEnableCollisions(RB2.getGeometries()[j], collision)
+
 # Class representing the yumi robot
 class yumiRobot(agxSDK.StepEventListener):
     def __init__(self, yumi_assembly):
@@ -123,8 +136,10 @@ class yumiRobot(agxSDK.StepEventListener):
 
         # publish joint positions 
         jointPositions = []
+        jointVelocities = []
         for i in range(len(self.jointNamesRevolute)):
             jointPositions.append(self.yumi.getConstraint1DOF(self.jointNamesRevolute[i]).getAngle())
+            jointVelocities.append(self.yumi.getConstraint1DOF(self.jointNamesRevolute[i]).getCurrentSpeed())
         msg = JointState()
         msg.header.stamp = rospy.Time.now()
         msg.header.seq = self.seq
@@ -135,6 +150,7 @@ class yumiRobot(agxSDK.StepEventListener):
                     "yumi_robl_joint_7", "yumi_robr_joint_1", "yumi_robr_joint_2", "yumi_robr_joint_3", "yumi_robr_joint_4",\
                     "yumi_robr_joint_5", "yumi_robr_joint_6", "yumi_robr_joint_7"] 
         msg.position = jointPositions
+        msg.velocity = jointVelocities
 
         # publish joint positions
         self.pub.publish(msg)
@@ -229,17 +245,53 @@ def buildScene():
         print("Error reading the URDF file.")
         sys.exit(2)
 
-    # Disable self-collision between links.
-    sim.getSpace().setEnablePair(yumi_assembly_ref.getName(), yumi_assembly_ref.getName(), False)
+
 
     # Add the yumi assembly to the simulation and create visualization for it
     sim.add(yumi_assembly_ref.get())
     fl = agxOSG.createVisual(yumi_assembly_ref.get(), root)
-
+    
     # Create the yumi robot representation with a ROS subscriber
     yumi = yumiRobot(yumi_assembly_ref.get())
     sim.add(yumi)
 
+    # disable collision between floor and yumi body
+    for i in range(len(yumi_assembly_ref.getRigidBody('yumi_body').getGeometries())):
+        floor.setEnableCollisions(yumi_assembly_ref.getRigidBody('yumi_body').getGeometries()[i], False)
+
+    # disable collision between connected links. 
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_body'), yumi_assembly_ref.getRigidBody('yumi_link_1_r'), False)
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_body'), yumi_assembly_ref.getRigidBody('yumi_link_1_l'), False)
+
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_1_r'), yumi_assembly_ref.getRigidBody('yumi_link_2_r'), False)
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_1_l'), yumi_assembly_ref.getRigidBody('yumi_link_2_l'), False)
+
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_2_r'), yumi_assembly_ref.getRigidBody('yumi_link_3_r'), False)
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_2_l'), yumi_assembly_ref.getRigidBody('yumi_link_3_l'), False)
+
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_3_r'), yumi_assembly_ref.getRigidBody('yumi_link_4_r'), False)
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_3_l'), yumi_assembly_ref.getRigidBody('yumi_link_4_l'), False)
+
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_4_r'), yumi_assembly_ref.getRigidBody('yumi_link_5_r'), False)
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_4_l'), yumi_assembly_ref.getRigidBody('yumi_link_5_l'), False)
+
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_5_r'), yumi_assembly_ref.getRigidBody('yumi_link_6_r'), False)
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_5_l'), yumi_assembly_ref.getRigidBody('yumi_link_6_l'), False)
+
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_6_r'), yumi_assembly_ref.getRigidBody('yumi_link_7_r'), False)
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_6_l'), yumi_assembly_ref.getRigidBody('yumi_link_7_l'), False)
+
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_6_r'), yumi_assembly_ref.getRigidBody('yumi_link_7_r'), False)
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_6_l'), yumi_assembly_ref.getRigidBody('yumi_link_7_l'), False)
+
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_7_r'), yumi_assembly_ref.getRigidBody('gripper_r_base'), False)
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('yumi_link_7_l'), yumi_assembly_ref.getRigidBody('gripper_l_base'), False)
+    
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('gripper_r_base'), yumi_assembly_ref.getRigidBody('gripper_r_finger_r'), False)
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('gripper_r_base'), yumi_assembly_ref.getRigidBody('gripper_r_finger_l'), False)
+
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('gripper_l_base'), yumi_assembly_ref.getRigidBody('gripper_l_finger_r'), False)
+    collisionBetweenBodies(yumi_assembly_ref.getRigidBody('gripper_l_base'), yumi_assembly_ref.getRigidBody('gripper_l_finger_l'), False)
     # Setup the camera
     setupCamera(app)
 
