@@ -127,46 +127,87 @@ def main():
     rospy.init_node('InitController', anonymous=True) 
     jointPos = []
     timeList = []
-    
+    time_ = 2
     reset_ = np.array([0.7, -1.7, -0.8, 1.0, -2.2, 1.0, 0.0, -0.7, -1.7, 0.8, 1.0, 2.2, 1.0, 0.0])
     jointPos.append(reset_)
-    timeList.append(5)
+    timeList.append(2*time_)
 
     jointPos.append(reset_ + np.array([-0.3, 0,0,0,0,0,0,0,0,0,0,0,0,0]))
-    timeList.append(2)
+    timeList.append(time_)
     jointPos.append(reset_)
-    timeList.append(2)
+    timeList.append(time_)
 
     jointPos.append(reset_ + np.array([0, 0.5,0,0,0,0,0,0,0,0,0,0,0,0]))
-    timeList.append(2)
+    timeList.append(time_)
     jointPos.append(reset_)
-    timeList.append(2)
+    timeList.append(time_)
 
     jointPos.append(reset_ + np.array([0, 0,0.5,0,0,0,0,0,0,0,0,0,0,0]))
-    timeList.append(2)
+    timeList.append(time_)
     jointPos.append(reset_)
-    timeList.append(2)
+    timeList.append(time_)
 
     jointPos.append(reset_ + np.array([0, 0,0.0,-0.5,0,0,0,0,0,0,0,0,0,0]))
-    timeList.append(2)
+    timeList.append(time_)
     jointPos.append(reset_)
-    timeList.append(2)
+    timeList.append(time_)
 
     jointPos.append(reset_ + np.array([0, 0,0.0,0,0.5,0,0,0,0,0,0,0,0,0]))
-    timeList.append(2)
+    timeList.append(time_)
     jointPos.append(reset_)
-    timeList.append(2)
+    timeList.append(time_)
 
     jointPos.append(reset_ + np.array([0, 0,0.0,0,0.0,0.5,0,0,0,0,0,0,0,0]))
-    timeList.append(2)
+    timeList.append(time_)
     jointPos.append(reset_)
-    timeList.append(2)
+    timeList.append(time_)
 
     jointPos.append(reset_ + np.array([0, 0,0.0,0,0.0,0,0.5,0,0,0,0,0,0,0]))
-    timeList.append(2)
+    timeList.append(time_)
     jointPos.append(reset_)
-    timeList.append(2)
+    timeList.append(time_)
 
+    # ------------------------------------
+    jointPos.append(reset_ + np.array([0,0,0,0,0,0,0,0.3, 0,0,0,0,0,0]))
+    timeList.append(time_)
+    jointPos.append(reset_)
+    timeList.append(time_)
+
+    jointPos.append(reset_ + np.array([0,0,0,0,0,0,0,0, 0.5,0,0,0,0,0]))
+    timeList.append(time_)
+    jointPos.append(reset_)
+    timeList.append(time_)
+
+    jointPos.append(reset_ + np.array([0,0,0,0,0,0,0, 0,0,-0.5,0,0,0,0]))
+    timeList.append(time_)
+    jointPos.append(reset_)
+    timeList.append(time_)
+
+    jointPos.append(reset_ + np.array([0,0,0,0,0,0,0, 0,0,0,-0.5,0,0,0]))
+    timeList.append(time_)
+    jointPos.append(reset_)
+    timeList.append(time_)
+
+    jointPos.append(reset_ + np.array([0,0,0,0,0,0,0, 0,0,0,0,-0.5,0,0]))
+    timeList.append(time_)
+    jointPos.append(reset_)
+    timeList.append(time_)
+
+    jointPos.append(reset_ + np.array([0,0,0,0,0,0,0, 0,0,0,0,0,0.5,0]))
+    timeList.append(time_)
+    jointPos.append(reset_)
+    timeList.append(time_)
+
+    jointPos.append(reset_ + np.array([0,0,0,0,0,0,0, 0,0,0,0,0,0,-0.5]))
+    timeList.append(time_)
+    jointPos.append(reset_)
+    timeList.append(time_)
+
+
+    jointPos.append(np.array([1.3543077698246733, -1.5815085977232308, -1.4500152445054284, 0.7492781919632613, -2.567556585147515, 1.4633943166130359, 1.0140361061764056, -1.3552425758827016, -1.5809227240154569, 1.4487559264434073, 0.7111951349191271, 2.564791234233497, 1.4805131670969713, -1.0119701592369972]))
+    timeList.append(1.5*time_)
+    jointPos.append(reset_)
+    timeList.append(1.5*time_)
 
     tester = Tester(jointPos, timeList)
     rospy.sleep(0.05)
