@@ -21,6 +21,7 @@ try:
     import rospkg
     from std_msgs.msg import Float64MultiArray
     from sensor_msgs.msg import JointState
+    from geometry_msgs.msg import WrenchStamped
     from abb_egm_msgs.msg import EGMState, EGMChannelState
     from abb_rapid_sm_addin_msgs.srv import SetSGCommand
     from abb_robot_msgs.srv import TriggerWithResultCode
@@ -52,10 +53,10 @@ class yumiRobot(agxSDK.StepEventListener):
         super().__init__()
         
         # ROS subscriber and publisher
-        self.vel_command_subscriber = rospy.Subscriber("/yumi/egm/joint_group_velocity_controller/command", Float64MultiArray, self.callback, queue_size=1)
-        self.pub = rospy.Publisher('/yumi/egm/joint_states', JointState, queue_size=1)
-        self.pub_egm_state = rospy.Publisher('/yumi/egm/egm_states', EGMState, queue_size=1)
-
+        self.vel_command_subscriber = rospy.Subscriber("/yumi/egm/joint_group_velocity_controller/command", Float64MultiArray, self.callback, queue_size=2, tcp_nodelay=True)
+        self.pub = rospy.Publisher('/yumi/egm/joint_states', JointState, queue_size=2)
+        self.pub_egm_state = rospy.Publisher('/yumi/egm/egm_states', EGMState, queue_size=2)
+        self.pubForceTorque = rospy.Publisher('/Yumi/forceTorqueR', WrenchStamped, queue_size=1)
         # yumi  
         self.yumi = yumi_assembly
 
@@ -140,6 +141,8 @@ class yumiRobot(agxSDK.StepEventListener):
         for i in range(len(self.jointNamesRevolute)):
             jointPositions.append(self.yumi.getConstraint1DOF(self.jointNamesRevolute[i]).getAngle())
             jointVelocities.append(self.yumi.getConstraint1DOF(self.jointNamesRevolute[i]).getCurrentSpeed())
+
+        # joint state message  
         msg = JointState()
         msg.header.stamp = rospy.Time.now()
         msg.header.seq = self.seq
@@ -156,6 +159,23 @@ class yumiRobot(agxSDK.StepEventListener):
         self.pub.publish(msg)
         # publish egm state
         self.pub_egm_state.publish(self.msg_egm_state)
+
+        # meassure force and torque
+        forces = [0,0,0,0,0,0]
+        for i in range(6): 
+            forces[i] = self.yumi.getConstraint('yumi_link_7_r_joint').getCurrentForce(i)
+        
+        # Publish force and torque 
+        forceMsg = WrenchStamped()
+        forceMsg.header.stamp = rospy.Time.now()
+        forceMsg.header.seq = self.seq
+        forceMsg.wrench.force.z = forces[0]
+        forceMsg.wrench.force.y = forces[1]
+        forceMsg.wrench.force.x = forces[2]
+        forceMsg.wrench.torque.z = forces[3]
+        forceMsg.wrench.torque.y = forces[4]
+        forceMsg.wrench.torque.x = forces[5]
+        self.pubForceTorque.publish(forceMsg)
 
     def receiveGripperCommand(self, SetSGCommand):
         # callback for gripper set_sg_command service, only 3 functionalities emulated, move to, grip in and grip out. 

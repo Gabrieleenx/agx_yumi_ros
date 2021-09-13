@@ -15,58 +15,123 @@ plt.rcParams["font.family"] = "Times New Roman"
 
 plt.style.use('ggplot')
 
-
+class DataLists:
+    def __init__(self):
+        self.targetTime = []
+        self.targetR = []
+        self.targetL = []
+        self.measuredTime = []
+        self.measuredR = []
+        self.measuredL = []
+        self.diffR = []
+        self.diffL = []
 
 def main():
-    path = "/home/gabriel/DataJointPos.obj" # path to obj
+    pathSim = "/home/gabriel/YumiVsSim/DataJointPosSim1sNew3.obj" # path to obj
+    pathReal = "/home/gabriel/YumiVsSim/DataJointPosSim1sNew3.obj" # path to obj
 
-    file_load = open(path, 'rb')
-    savedObj = pickle.load(file_load)
+    file_load = open(pathSim, 'rb')
+    savedObjSim = pickle.load(file_load)
     file_load.close()
 
-    numPoints = len(savedObj.jointPoseTarget)
+    file_load = open(pathReal, 'rb')
+    savedObjReal = pickle.load(file_load)
+    file_load.close()
 
-    targetTime = []
-    targetRight = []
-    actualTime = []
-    actualRight = []
-    diffRight = []
+    numPointsSim = len(savedObjSim.jointPoseTarget)
+    numPointsReal = len(savedObjReal.jointPoseTarget)
 
-    targetVelTime = []
-    targetVelRight = []
-    actualVelTime = []
-    actualVelRight = []
-    diffVelRight = []
+    simPos = DataLists()
+    simVel = DataLists()
 
-    for i in range(numPoints):
-        targetTime.append(savedObj.jointPoseTarget[i].time)
-        targetRight.append(savedObj.jointPoseTarget[i].data[0:7].tolist())
-        actualTime.append(savedObj.jointPoseActual[i].time)
-        actualRight.append(savedObj.jointPoseActual[i].data[0:7].tolist())
-        diff =  savedObj.jointPoseActual[i].data - savedObj.jointPoseTarget[i].data
-        diffRight.append(diff[0:7].tolist())
+    yumiPos = DataLists()
+    yumiVel = DataLists()
 
-        targetVelTime.append(savedObj.jointVelTarget[i].time)
-        targetVelRight.append(savedObj.jointVelTarget[i].data[0:7].tolist())
-        actualVelTime.append(savedObj.jointVelActual[i].time)
-        actualVelRight.append(savedObj.jointVelActual[i].data[0:7].tolist())
-        diffVel = savedObj.jointVelActual[i].data - savedObj.jointVelTarget[i].data
-        diffVelRight.append(diff[0:7].tolist())
+    diffTimeSim = []
+
+    
+    print('Nr points ', numPointsReal)
+    for i in range(1, numPointsReal):
+        diffTimeSim.append((savedObjReal.jointPoseActual[i].time - savedObjReal.jointPoseActual[i-1].time))
+    print("Hz, ", 1/(np.mean(diffTimeSim)))
+    
+
+    # real yumi
+    for i in range(numPointsReal):
+        yumiPos.targetTime.append(savedObjReal.jointPoseTarget[i].time - savedObjReal.jointPoseTarget[0].time)
+        yumiPos.targetR.append(savedObjReal.jointPoseTarget[i].data[0:7].tolist() )
+        yumiPos.targetL.append(savedObjReal.jointPoseTarget[i].data[7:14].tolist() )
+
+        yumiPos.measuredTime.append(savedObjReal.jointPoseActual[i].time - savedObjReal.jointPoseActual[0].time)
+        yumiPos.measuredR.append(savedObjReal.jointPoseActual[i].data[0:7].tolist() )
+        yumiPos.measuredL.append(savedObjReal.jointPoseActual[i].data[7:14].tolist() )
+
+        yumiVel.targetTime.append(savedObjReal.jointVelTarget[i].time - savedObjReal.jointVelTarget[0].time)
+        yumiVel.targetR.append(savedObjReal.jointVelTarget[i].data[0:7].tolist() )
+        yumiVel.targetL.append(savedObjReal.jointVelTarget[i].data[7:14].tolist() )
+
+        yumiVel.measuredTime.append(savedObjReal.jointVelActual[i].time - savedObjReal.jointVelActual[0].time)
+        yumiVel.measuredR.append(savedObjReal.jointVelActual[i].data[0:7].tolist() )
+        yumiVel.measuredL.append(savedObjReal.jointVelActual[i].data[7:14].tolist() )
+
+        diffPos = savedObjReal.jointPoseTarget[i].data - savedObjReal.jointPoseActual[i].data
+        diffVel = savedObjReal.jointVelTarget[i].data - savedObjReal.jointVelActual[i].data
+
+        yumiPos.diffR.append(diffPos[0:7].tolist())
+        yumiPos.diffL.append(diffPos[7:14].tolist())
+
+        yumiVel.diffR.append(diffVel[0:7].tolist())
+        yumiVel.diffL.append(diffVel[7:14].tolist())
+
+    # sim yumi
+    for i in range(numPointsSim):
+        simPos.targetTime.append(savedObjSim.jointPoseTarget[i].time - savedObjSim.jointPoseTarget[0].time)
+        simPos.targetR.append(savedObjSim.jointPoseTarget[i].data[0:7].tolist() )
+        simPos.targetL.append(savedObjSim.jointPoseTarget[i].data[7:14].tolist() )
+
+        simPos.measuredTime.append(savedObjSim.jointVelTarget[i].time - savedObjSim.jointVelTarget[0].time)
+        simPos.measuredR.append(savedObjSim.jointPoseActual[i].data[0:7].tolist() )
+        simPos.measuredL.append(savedObjSim.jointPoseActual[i].data[7:14].tolist() )
+
+        simVel.targetTime.append(savedObjSim.jointVelActual[i].time - savedObjSim.jointVelTarget[0].time)
+        simVel.targetR.append(savedObjSim.jointVelTarget[i].data[0:7].tolist() )
+        simVel.targetL.append(savedObjSim.jointVelTarget[i].data[7:14].tolist() )
+
+        simVel.measuredTime.append(savedObjSim.jointVelActual[i].time - savedObjSim.jointVelActual[0].time)
+        simVel.measuredR.append(savedObjSim.jointVelActual[i].data[0:7].tolist() )
+        simVel.measuredL.append(savedObjSim.jointVelActual[i].data[7:14].tolist() )
+
+        diffPos = savedObjSim.jointPoseTarget[i].data - savedObjSim.jointPoseActual[i].data
+        diffVel = savedObjSim.jointVelTarget[i].data - savedObjSim.jointVelActual[i].data
+
+        simPos.diffR.append(diffPos[0:7].tolist())
+        simPos.diffL.append(diffPos[7:14].tolist())
+
+        simVel.diffR.append(diffVel[0:7].tolist())
+        simVel.diffL.append(diffVel[7:14].tolist())
 
 
     fig, ax = plt.subplots(figsize =(12, 5))
-    ax.plot(targetTime, targetRight, '-', linewidth=1, alpha=0.8)
-    ax.plot(actualTime, actualRight, '-', linewidth=1, alpha=0.8)
-
+    ax.plot(simPos.measuredTime[1:], diffTimeSim, '-', linewidth=1, alpha=0.8)
     plt.show()
 
+
+    fig = plt.figure()
+    plt.subplot(2, 1, 1)
+    plt.plot(simPos.measuredTime, simPos.measuredR, '--', linewidth=1, alpha=0.8)
+    plt.plot(yumiPos.measuredTime, yumiPos.targetR, '-', linewidth=1, alpha=0.8)
+    plt.subplot(2, 1, 2)
+    plt.plot(simPos.measuredTime, simPos.measuredL, '--', linewidth=1, alpha=0.8)
+    plt.plot(yumiPos.measuredTime, yumiPos.targetL, '-', linewidth=1, alpha=0.8)
+    plt.show()
+    '''
     fig, ax = plt.subplots(figsize =(12, 5))
     ax.plot(targetTime, diffRight, '-', linewidth=1, alpha=0.8)
 
     plt.show()
 
     fig, ax = plt.subplots(figsize =(12, 5))
-    ax.plot(targetVelTime, targetVelRight, '-', linewidth=1, alpha=0.8)
+    ax.plot(targetVelTime, targetVelRight, '--', linewidth=1, alpha=0.8)
     ax.plot(actualVelTime, actualVelRight, '-', linewidth=1, alpha=0.8)
 
     plt.show()
@@ -75,7 +140,7 @@ def main():
     ax.plot(targetVelTime, diffVelRight, '-', linewidth=1, alpha=0.8)
 
     plt.show()
-
+    '''
 
 if __name__ == '__main__':
     main()
