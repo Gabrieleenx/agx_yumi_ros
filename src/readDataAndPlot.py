@@ -27,8 +27,8 @@ class DataLists:
         self.diffL = []
 
 def main():
-    pathSim = "/home/gabriel/YumiVsSim/DataJointPosSim1sNew3.obj" # path to obj
-    pathReal = "/home/gabriel/YumiVsSim/DataJointPosSim1sNew3.obj" # path to obj
+    pathSim = "/home/gabriel/YumiVsSim/DataJointPosSim1sN.obj" # path to obj
+    pathReal = "/home/gabriel/YumiVsSim/DataJointPosYumi1sN.obj" # path to obj
 
     file_load = open(pathSim, 'rb')
     savedObjSim = pickle.load(file_load)
@@ -111,36 +111,34 @@ def main():
         simVel.diffL.append(diffVel[7:14].tolist())
 
 
-    fig, ax = plt.subplots(figsize =(12, 5))
-    ax.plot(simPos.measuredTime[1:], diffTimeSim, '-', linewidth=1, alpha=0.8)
-    plt.show()
+    #fig, ax = plt.subplots(figsize =(12, 5))
+    #ax.plot(yumiPos.measuredTime[1:], diffTimeSim, '-', linewidth=1, alpha=0.8)
+    #plt.show()
 
 
-    fig = plt.figure()
-    plt.subplot(2, 1, 1)
+    fig = plt.figure(figsize =(12, 10))
+    ax1 = plt.subplot(2, 1, 1)
     plt.plot(simPos.measuredTime, simPos.measuredR, '--', linewidth=1, alpha=0.8)
-    plt.plot(yumiPos.measuredTime, yumiPos.targetR, '-', linewidth=1, alpha=0.8)
-    plt.subplot(2, 1, 2)
+    plt.plot(yumiPos.measuredTime, yumiPos.measuredR, '-', linewidth=1, alpha=0.8)
     plt.plot(simPos.measuredTime, simPos.measuredL, '--', linewidth=1, alpha=0.8)
-    plt.plot(yumiPos.measuredTime, yumiPos.targetL, '-', linewidth=1, alpha=0.8)
+    plt.plot(yumiPos.measuredTime, yumiPos.measuredL, '-', linewidth=1, alpha=0.8)
+    ax1.title.set_text('Position')
+    ax1.set_xlabel('Time [s]')
+    ax1.set_ylabel('Position [rad]')
+
+    ax2 = plt.subplot(2, 1, 2)
+    plt.plot(simVel.measuredTime, simVel.measuredR, '--', linewidth=1, alpha=0.8)
+    plt.plot(yumiVel.measuredTime, yumiVel.measuredR, '-', linewidth=1, alpha=0.8)
+    plt.plot(simVel.measuredTime, simVel.measuredL, '--', linewidth=1, alpha=0.8)
+    plt.plot(yumiVel.measuredTime, yumiVel.measuredL, '-', linewidth=1, alpha=0.8)
+  
+    ax2.title.set_text('Velocity')
+    ax2.set_xlabel('Time [s]')
+    ax2.set_ylabel('Velocity [rad]')
+
+    fig.tight_layout()
     plt.show()
-    '''
-    fig, ax = plt.subplots(figsize =(12, 5))
-    ax.plot(targetTime, diffRight, '-', linewidth=1, alpha=0.8)
 
-    plt.show()
-
-    fig, ax = plt.subplots(figsize =(12, 5))
-    ax.plot(targetVelTime, targetVelRight, '--', linewidth=1, alpha=0.8)
-    ax.plot(actualVelTime, actualVelRight, '-', linewidth=1, alpha=0.8)
-
-    plt.show()
-
-    fig, ax = plt.subplots(figsize =(12, 5))
-    ax.plot(targetVelTime, diffVelRight, '-', linewidth=1, alpha=0.8)
-
-    plt.show()
-    '''
 
 if __name__ == '__main__':
     main()

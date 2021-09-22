@@ -14,6 +14,8 @@ import agxIO
 import sys
 import os
 import traceback
+import utils 
+import agxUtil
 
 
 try:
@@ -33,6 +35,8 @@ except Exception as e:
 
 from agxPythonModules.utils.environment import simulation, root, application, init_app
 
+STEP_TIME = 1/120
+CASE = 'fixture' # 'fixture' or 'grabDLO'
 
 def rigidBodyGeometriesToList(rb):
     geometries = rb.getGeometries() # geometries is of type GeometryRefVector
@@ -69,7 +73,7 @@ class yumiRobot(agxSDK.StepEventListener):
                                  'yumi_joint_1_r', 'yumi_joint_2_r', 'yumi_joint_7_r', 'yumi_joint_3_r', 'yumi_joint_4_r', 'yumi_joint_5_r', 'yumi_joint_6_r']
        
         self.jointEffort = [50,50,50,50,50,50,50,50,50,50,50,50,50,50] #maximum joint effort, assuming same force in upper and lower, same order as jointNamesRevolute
-        self.grpperEffort  = 15 # set the grip force
+        self.grpperEffort  = 10 # set the grip force
         self.jointNamesGrippers = ['gripper_l_joint', 'gripper_l_joint_m', 'gripper_r_joint', 'gripper_r_joint_m'] # name of gripper joints in urdf
         self.gripperPosition = [0,0,0,0] # used to store gripper commands until they are used
         self.gripperPositionRun = [0,0,0,0] # uesd for controlling. Both are needed for emulating yumi behaviour 
@@ -179,7 +183,6 @@ class yumiRobot(agxSDK.StepEventListener):
 
     def receiveGripperCommand(self, SetSGCommand):
         # callback for gripper set_sg_command service, only 3 functionalities emulated, move to, grip in and grip out. 
-
         # indx for left gripper task
         if SetSGCommand.task == 'T_ROB_L':
             index_a = 0
@@ -233,16 +236,18 @@ def setupCamera(app):
 
 def buildScene():
 
-    app = agxPython.getContext().environment.getApplication()
+    app = None # agxPython.getContext().environment.getApplication()
     sim = agxPython.getContext().environment.getSimulation()
     root = agxPython.getContext().environment.getSceneRoot()
-
+    # Change the timestep
+    sim.setTimeStep(STEP_TIME)
     # Construct the floor that the yumi robot will stand on
     floor = agxCollide.Geometry(agxCollide.Box(agx.Vec3(1, 1, 0.05)))
     floor.setPosition(0, 0, -0.05)
     sim.add(floor)
     fl = agxOSG.createVisual(floor, root)
     agxOSG.setDiffuseColor(fl, agxRender.Color.LightGray())
+
 
     # Set the sky color
     application().getSceneDecorator().setBackgroundColor(agxRender.Color.SkyBlue() , agxRender.Color.DodgerBlue())
@@ -254,7 +259,8 @@ def buildScene():
     package_path = pathToAGXPkg
 
     # initial joint position 
-    initJointPosList = [1.0, -2.0, -1.2, 0.6, -2.0, 1.0, 0.0, 0.0, 0.0, -1.0, -2.0, 1.2, 0.6, 2.0, 1.0, 0.0, 0.0, 0.0]
+    #initJointPosList = [1.0, -2.0, -1.2, 0.6, -2.0, 1.0, 0.0, 0.0, 0.0, -1.0, -2.0, 1.2, 0.6, 2.0, 1.0, 0.0, 0.0, 0.0]
+    initJointPosList = [1.0157189974398513,  -1.2250581426342209, -1.0116368949128605, 1.3020200753993196, -2.0266021268656664, 1.5525773965548053, 1.3745989237267395,0,0,-1.0024065462675744, -1.2247615902383373, 1.0191185734510633, 1.2749531867574384, 2.0237406614692075, 1.56660964034699, -1.3754033952812534, 0, 0]
     initJointPos = agx.RealVector()
     for i in range(len(initJointPosList)):
         initJointPos.append(initJointPosList[i])
@@ -273,6 +279,7 @@ def buildScene():
     
     # Create the yumi robot representation with a ROS subscriber
     yumi = yumiRobot(yumi_assembly_ref.get())
+
     sim.add(yumi)
 
     # disable collision between floor and yumi body
@@ -312,8 +319,31 @@ def buildScene():
 
     collisionBetweenBodies(yumi_assembly_ref.getRigidBody('gripper_l_base'), yumi_assembly_ref.getRigidBody('gripper_l_finger_r'), False)
     collisionBetweenBodies(yumi_assembly_ref.getRigidBody('gripper_l_base'), yumi_assembly_ref.getRigidBody('gripper_l_finger_l'), False)
-    # Setup the camera
-    setupCamera(app)
+    
+    # material 
+    material_hard = agx.Material("Aluminum")
+    yumi_assembly_ref.getRigidBody('gripper_l_finger_l').getGeometries()[0].setMaterial(material_hard)
+    yumi_assembly_ref.getRigidBody('gripper_l_finger_r').getGeometries()[0].setMaterial(material_hard)
+    yumi_assembly_ref.getRigidBody('gripper_r_finger_l').getGeometries()[0].setMaterial(material_hard)
+    yumi_assembly_ref.getRigidBody('gripper_r_finger_r').getGeometries()[0].setMaterial(material_hard)
+
+
+
+    if CASE == 'fixture':
+        # DLO
+        utils.create_DLO(sim, root, material_hard)
+    
+        # create fixture 
+        rotation = agx.EulerAngles(0, 0, agx.degreesToRadians(90.0)) 
+        utils.create_fixture(sim=sim, position=agx.Vec3(0.3,0,0), name='Fixture', root=root, rotation=rotation)
+
+    elif CASE == 'grabDLO':
+
+        utils.create_DLO_on_floor(sim, root, material_hard)
+    else:
+        pass
+    # not working 
+    #agxOSG.createAxes(yumi_assembly_ref.getConstraint('yumi_link_7_r_joint'), root, 1.0, agx.Vec4f(1,1,1,1))
 
     application().getSceneDecorator().setEnableShadows(True)
 
@@ -321,6 +351,7 @@ def buildScene():
 
 def init(app):
     # Initialize ROS
+    agx.setNumThreads(4)
     rospy.init_node('AGX', anonymous=True) 
 
 
