@@ -9,6 +9,7 @@ import agxCollide
 import agxOSG
 import agxSDK
 import agxCable 
+import agxWire
 
 class JointState(object):
     def __init__(self,\
@@ -242,6 +243,44 @@ def create_DLO(sim, root, material_hard):
     agxUtil.setEnableCollisions(dlo,  sim.getAssembly('yumi').getRigidBody('gripper_l_finger_r'), False)
     agxUtil.setEnableCollisions(dlo,  sim.getAssembly('yumi').getRigidBody('gripper_l_finger_l'), False)
 
+def createWire(sim, root, material_hard):
+    wireMaterial = agx.Material("WireMaterial")
+    wireMaterial.getWireMaterial().setYoungsModulusStretch(200E9)
+
+    wireRadius = 0.005
+    wireResolutionPerUnitLength = 1  # Lumped elements per meter.
+    wireLength = 100
+
+    # Create the wire.
+    wire = agxWire.Wire(wireRadius, wireResolutionPerUnitLength)
+
+    # Add a renderer for the wire
+    sim.add(agxOSG.WireRenderer(wire, root))
+
+    wire.setMaterial(wireMaterial)
+
+    # Add connection between cable and gripper
+    tf_0 = agx.AffineMatrix4x4()
+    tf_0.setTranslate(0.0 ,0, 0.135)
+    tf_0.setRotate(agx.EulerAngles(agx.degreesToRadians(-90.0),0, 0) )
+
+    wire.add(agxWire.BodyFixedNode(sim.getRigidBody("gripper_r_base"), agx.Vec3(0, 0, 0.135)))
+
+    tf_0 = agx.AffineMatrix4x4()
+    tf_0.setTranslate(0.0 ,0, 0.135)
+    tf_0.setRotate(agx.EulerAngles(agx.degreesToRadians(-90.0),0, 0) )
+    wire.add(agxWire.BodyFixedNode(sim.getRigidBody("gripper_l_base"), agx.Vec3(0, 0, 0.135)))
+
+    # Give the bodies in the wire a lot of velocity damping so it does not vibrate
+    wire.setLinearVelocityDamping(1)
+    sim.add(wire)
+
+    #agxUtil.setEnableCollisions(wire,  sim.getAssembly('yumi').getRigidBody('gripper_r_finger_r'), False)
+    #agxUtil.setEnableCollisions(wire,  sim.getAssembly('yumi').getRigidBody('gripper_r_finger_l'), False)
+    #agxUtil.setEnableCollisions(wire,  sim.getAssembly('yumi').getRigidBody('gripper_l_finger_r'), False)
+    #agxUtil.setEnableCollisions(wire,  sim.getAssembly('yumi').getRigidBody('gripper_l_finger_l'), False)
+
+
 
 def create_DLO_on_floor(sim, root, material_hard):
     # Rope parameters
@@ -250,7 +289,7 @@ def create_DLO_on_floor(sim, root, material_hard):
     pegPoissionRatio = 0.1  # no unit
     youngMoculusBend = 2e5  # 1e4
     YoungModulusTwist = 2e5  # 1e10
-    YoungModulusStretch = 1e7  # Pascals
+    YoungModulusStretch = 1e8  # Pascals
     dampening = 1e4
     # Create rope and set name + properties
     peg = agxCable.Cable(radious,resolution)
@@ -283,23 +322,14 @@ def create_DLO_on_floor(sim, root, material_hard):
         print("Successful rope initialization.")
     else:
         print(report.getActualError())
-    
-    # Add rope to simulation
-    #sim.add(peg)
-    
 
     # Set rope material
     material_peg = peg.getMaterial()
     material_peg.setName("rope_material")
-    #material_hard.getSurfaceMaterial().setRoughness(100)
-    print('roughness material_hard ', material_hard.getSurfaceMaterial().getRoughness())
-    #material_peg.getSurfaceMaterial().setRoughness(100)
-    print('roughness ', material_peg.getSurfaceMaterial().getRoughness())
-    #material_hard = agx.Material("Aluminum")
 
     contactMaterial = sim.getMaterialManager().getOrCreateContactMaterial(material_hard, material_peg)
     contactMaterial.setYoungsModulus(1e12)
-    contactMaterial.setAdhesion(0.5, 0.0001)
+    #contactMaterial.setAdhesion(0.5, 0.0001)
     fm = agx.IterativeProjectedConeFriction()
     fm.setSolveType(agx.FrictionModel.DIRECT)
     contactMaterial.setFrictionModel(fm)
@@ -312,3 +342,28 @@ def create_DLO_on_floor(sim, root, material_hard):
 
     dlo = agxCable.Cable.find(sim, "DLO")
     fl = agxOSG.createVisual(dlo, root)
+
+def create_wire_on_floor(sim, root, material_hard):
+
+    wireMaterial = agx.Material("WireMaterial")
+    wireMaterial.getWireMaterial().setYoungsModulusStretch(200E9)
+
+    wireRadius = 0.005
+    wireResolutionPerUnitLength = 1  # Lumped elements per meter.
+    wireLength = 100
+
+    # Create the wire.
+    wire = agxWire.Wire(wireRadius, wireResolutionPerUnitLength)
+
+    # Add a renderer for the wire
+    sim.add(agxOSG.WireRenderer(wire, root))
+
+    wire.setMaterial(wireMaterial)
+
+    node = agxWire.FreeNode(agx.Vec3(0.3, -0.3, 0.01))
+    wire.add(node)
+    node = agxWire.FreeNode(agx.Vec3(0.3, 0.3, 0.01))
+    wire.add(node)
+    # Give the bodies in the wire a lot of velocity damping so it does not vibrate
+    wire.setLinearVelocityDamping(1)
+    sim.add(wire)

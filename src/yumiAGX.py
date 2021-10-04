@@ -36,7 +36,7 @@ except Exception as e:
 from agxPythonModules.utils.environment import simulation, root, application, init_app
 
 STEP_TIME = 1/120
-CASE = 'fixture' # 'fixture' or 'grabDLO'
+CASE = 'fixtureWire' # 'fixture', 'runTest', 'grabWire' or 'grabDLO'
 
 def rigidBodyGeometriesToList(rb):
     geometries = rb.getGeometries() # geometries is of type GeometryRefVector
@@ -73,7 +73,7 @@ class yumiRobot(agxSDK.StepEventListener):
                                  'yumi_joint_1_r', 'yumi_joint_2_r', 'yumi_joint_7_r', 'yumi_joint_3_r', 'yumi_joint_4_r', 'yumi_joint_5_r', 'yumi_joint_6_r']
        
         self.jointEffort = [50,50,50,50,50,50,50,50,50,50,50,50,50,50] #maximum joint effort, assuming same force in upper and lower, same order as jointNamesRevolute
-        self.grpperEffort  = 10 # set the grip force
+        self.grpperEffort  = 3 # set the grip force
         self.jointNamesGrippers = ['gripper_l_joint', 'gripper_l_joint_m', 'gripper_r_joint', 'gripper_r_joint_m'] # name of gripper joints in urdf
         self.gripperPosition = [0,0,0,0] # used to store gripper commands until they are used
         self.gripperPositionRun = [0,0,0,0] # uesd for controlling. Both are needed for emulating yumi behaviour 
@@ -248,7 +248,6 @@ def buildScene():
     fl = agxOSG.createVisual(floor, root)
     agxOSG.setDiffuseColor(fl, agxRender.Color.LightGray())
 
-
     # Set the sky color
     application().getSceneDecorator().setBackgroundColor(agxRender.Color.SkyBlue() , agxRender.Color.DodgerBlue())
 
@@ -270,8 +269,6 @@ def buildScene():
     if (yumi_assembly_ref.get() == None):
         print("Error reading the URDF file.")
         sys.exit(2)
-
-
 
     # Add the yumi assembly to the simulation and create visualization for it
     sim.add(yumi_assembly_ref.get())
@@ -337,9 +334,19 @@ def buildScene():
         rotation = agx.EulerAngles(0, 0, agx.degreesToRadians(90.0)) 
         utils.create_fixture(sim=sim, position=agx.Vec3(0.3,0,0), name='Fixture', root=root, rotation=rotation)
 
+    elif CASE == 'fixtureWire':
+        # DLO
+        utils.createWire(sim, root, material_hard)
+    
+        # create fixture 
+        rotation = agx.EulerAngles(0, 0, agx.degreesToRadians(90.0)) 
+        utils.create_fixture(sim=sim, position=agx.Vec3(0.3,0,0), name='Fixture', root=root, rotation=rotation)
+
     elif CASE == 'grabDLO':
 
         utils.create_DLO_on_floor(sim, root, material_hard)
+    elif CASE == 'grabWire':
+        utils.create_wire_on_floor(sim, root, material_hard)
     else:
         pass
     # not working 

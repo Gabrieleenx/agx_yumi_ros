@@ -24,8 +24,8 @@ def main():
     # ---------------
     if CASE == 'fixture':
         trajectoryPoint = Trajectory_point() # point 
-        trajectoryPoint.positionRight = [0.30, -0.10, 0.04] # poition right arm [m], yumi_base_link is the origin 
-        trajectoryPoint.positionLeft = [0.30, 0.10, 0.04]# poition left arm [m]
+        trajectoryPoint.positionRight = [0.30, -0.1, 0.04] # poition right arm [m], yumi_base_link is the origin 
+        trajectoryPoint.positionLeft = [0.30, 0.1, 0.04]# poition left arm [m]
         trajectoryPoint.orientationLeft = [1,0,0,0] # orientation left arm, quaterniorns [x, y, z, w]
         trajectoryPoint.orientationRight = [1,0,0,0]# orientation right arm
         trajectoryPoint.gripperLeft = 4.0 # gripper width for the fingers [mm]
@@ -33,6 +33,7 @@ def main():
         trajectoryPoint.pointTime = 12.0 # time to get to this point [s]
 
         trajectory = [trajectoryPoint]
+
     elif CASE == 'grabDLO':
         trajectoryPoint = Trajectory_point() # point 
         trajectoryPoint.positionRight = [0.30, -0.10, 0.001] # poition right arm [m], yumi_base_link is the origin 
