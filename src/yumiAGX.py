@@ -36,7 +36,7 @@ except Exception as e:
 from agxPythonModules.utils.environment import simulation, root, application, init_app
 
 STEP_TIME = 1/120
-CASE = 'fixtureWire' # 'fixture', 'runTest', 'grabWire' or 'grabDLO'
+CASE = 'grabDLO' # 'fixture', 'fixtureWire', 'grabWire' or 'grabDLO'
 
 def rigidBodyGeometriesToList(rb):
     geometries = rb.getGeometries() # geometries is of type GeometryRefVector
