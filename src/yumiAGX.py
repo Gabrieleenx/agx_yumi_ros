@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-# source /opt/Algoryx/AGX-2.30.4.0/setup_env.bash
+#!/usr/bin/env python3.8
+# source /opt/Algoryx/AGX-2.31.1.0/setup_env.bash
 '''
 rostopic pub /yumi/egm/joint_group_velocity_controller/command std_msgs/Float64MultiArray "data: [0,0,0,0,0,0,-0.1,0,0,0,0,0,0,0.5]"
 '''
@@ -73,7 +73,7 @@ class yumiRobot(agxSDK.StepEventListener):
                                  'yumi_joint_1_r', 'yumi_joint_2_r', 'yumi_joint_7_r', 'yumi_joint_3_r', 'yumi_joint_4_r', 'yumi_joint_5_r', 'yumi_joint_6_r']
        
         self.jointEffort = [50,50,50,50,50,50,50,50,50,50,50,50,50,50] #maximum joint effort, assuming same force in upper and lower, same order as jointNamesRevolute
-        self.grpperEffort  = 3 # set the grip force
+        self.grpperEffort  = 25 # set the grip force
         self.jointNamesGrippers = ['gripper_l_joint', 'gripper_l_joint_m', 'gripper_r_joint', 'gripper_r_joint_m'] # name of gripper joints in urdf
         self.gripperPosition = [0,0,0,0] # used to store gripper commands until they are used
         self.gripperPositionRun = [0,0,0,0] # uesd for controlling. Both are needed for emulating yumi behaviour 
@@ -226,8 +226,8 @@ class yumiRobot(agxSDK.StepEventListener):
 
 def setupCamera(app):
     cameraData = app.getCameraData()
-    cameraData.eye = agx.Vec3(3.0813, 1.4021, 1.4828)
-    cameraData.center = agx.Vec3(-0.0716, -0.0077, 0.4658)
+    cameraData.eye = agx.Vec3(0.3, -1, 0.1)
+    cameraData.center = agx.Vec3(0.3, -0.0, 0.0)
     cameraData.up = agx.Vec3(-0.2857, -0.0514, 0.9569)
     cameraData.nearClippingPlane = 0.1
     cameraData.farClippingPlane = 5000
@@ -235,8 +235,9 @@ def setupCamera(app):
 
 
 def buildScene():
+    print('start build scene')
 
-    app = None # agxPython.getContext().environment.getApplication()
+    app = agxPython.getContext().environment.getApplication()
     sim = agxPython.getContext().environment.getSimulation()
     root = agxPython.getContext().environment.getSceneRoot()
     # Change the timestep
@@ -265,6 +266,7 @@ def buildScene():
         initJointPos.append(initJointPosList[i])
      
     # read urdf
+
     yumi_assembly_ref = agxModel.UrdfReader.read(urdf_file, package_path, initJointPos, True)
     if (yumi_assembly_ref.get() == None):
         print("Error reading the URDF file.")
@@ -319,12 +321,21 @@ def buildScene():
     
     # material 
     material_hard = agx.Material("Aluminum")
-    yumi_assembly_ref.getRigidBody('gripper_l_finger_l').getGeometries()[0].setMaterial(material_hard)
-    yumi_assembly_ref.getRigidBody('gripper_l_finger_r').getGeometries()[0].setMaterial(material_hard)
-    yumi_assembly_ref.getRigidBody('gripper_r_finger_l').getGeometries()[0].setMaterial(material_hard)
-    yumi_assembly_ref.getRigidBody('gripper_r_finger_r').getGeometries()[0].setMaterial(material_hard)
-
-
+    l_l_body = yumi_assembly_ref.getRigidBody('gripper_l_finger_l')
+    l_r_body = yumi_assembly_ref.getRigidBody('gripper_l_finger_r')
+    r_l_body = yumi_assembly_ref.getRigidBody('gripper_r_finger_l')
+    r_r_body = yumi_assembly_ref.getRigidBody('gripper_r_finger_r')
+    use_capsules = True
+    if use_capsules:
+        utils.replace_collision_geometry_with_capsules(sim, l_l_body, material_hard)
+        utils.replace_collision_geometry_with_capsules(sim, l_r_body, material_hard)
+        utils.replace_collision_geometry_with_capsules(sim, r_l_body, material_hard)
+        utils.replace_collision_geometry_with_capsules(sim, r_r_body, material_hard)
+    else:
+        yumi_assembly_ref.getRigidBody('gripper_l_finger_l').getGeometries()[1].setMaterial(material_hard)
+        yumi_assembly_ref.getRigidBody('gripper_l_finger_r').getGeometries()[1].setMaterial(material_hard)
+        yumi_assembly_ref.getRigidBody('gripper_r_finger_l').getGeometries()[1].setMaterial(material_hard)
+        yumi_assembly_ref.getRigidBody('gripper_r_finger_r').getGeometries()[1].setMaterial(material_hard)
 
     if CASE == 'fixture':
         # DLO
@@ -343,8 +354,9 @@ def buildScene():
         utils.create_fixture(sim=sim, position=agx.Vec3(0.3,0,0), name='Fixture', root=root, rotation=rotation)
 
     elif CASE == 'grabDLO':
-
         utils.create_DLO_on_floor(sim, root, material_hard)
+        rotation = agx.EulerAngles(0, 0, agx.degreesToRadians(90.0))
+        utils.create_fixture(sim=sim, position=agx.Vec3(0.37, 0, 0), name='Fixture', root=root, rotation=rotation)
     elif CASE == 'grabWire':
         utils.create_wire_on_floor(sim, root, material_hard)
     else:
@@ -353,12 +365,12 @@ def buildScene():
     #agxOSG.createAxes(yumi_assembly_ref.getConstraint('yumi_link_7_r_joint'), root, 1.0, agx.Vec4f(1,1,1,1))
 
     application().getSceneDecorator().setEnableShadows(True)
-
+    setupCamera(app)
     return root
 
 def init(app):
     # Initialize ROS
-    agx.setNumThreads(4)
+    agx.setNumThreads(8)
     rospy.init_node('AGX', anonymous=True) 
 
 

@@ -105,13 +105,13 @@ def create_fixture(sim, position, name, root, rotation):
     material_hard = agx.Material("Aluminum1")
 
     # base
-    MESH_FILE = '/home/gabriel/catkin/src/agx_yumi_ros/yumi_description/SimMeshes/fixture_baseBase.obj'
+    MESH_FILE = '/home/gabwal/CatkinWorkspaces/catkin_yumi/src/agx_yumi_ros/yumi_description/SimMeshes/fixture_baseBase.obj'
     nameBase = name + 'base'
     baseMesh = create_mesh(MESH_FILE=MESH_FILE , material=material_hard, position=position, static=True, name=nameBase, root=root, rotation=rotation)
     assembly.add(baseMesh)
 
     # finger 1 
-    MESH_FILE = '/home/gabriel/catkin/src/agx_yumi_ros/yumi_description/SimMeshes/fixtureSimF.obj'
+    MESH_FILE = '/home/gabwal/CatkinWorkspaces/catkin_yumi/src/agx_yumi_ros/yumi_description/SimMeshes/fixtureSimF.obj'
     nameFinger1 = name + 'finger1'
     rotation =  agx.AffineMatrix4x4.rotate(agx.Vec3(1,0,0),agx.Vec3(0,1,0))
     finger1Mesh = create_mesh(MESH_FILE=MESH_FILE , material=material_hard, position=position, static=False, name=nameFinger1, root=root, rotation=rotation)
@@ -133,7 +133,7 @@ def create_fixture(sim, position, name, root, rotation):
     assembly.add(hinge1)
 
     # finger 2
-    MESH_FILE = '/home/gabriel/catkin/src/agx_yumi_ros/yumi_description/SimMeshes/fixtureSimF.obj'
+    MESH_FILE = '/home/gabwal/CatkinWorkspaces/catkin_yumi/src/agx_yumi_ros/yumi_description/SimMeshes/fixtureSimF.obj'
     nameFinger2 =  name + 'finger2' 
     rotation =  agx.AffineMatrix4x4.rotate(agx.Vec3(1,0,0),agx.Vec3(0,1,0))
     finger2Mesh = create_mesh(MESH_FILE=MESH_FILE , material=material_hard, position=position, static=False, name=nameFinger2, root=root, rotation=rotation)
@@ -162,6 +162,8 @@ def create_fixture(sim, position, name, root, rotation):
 
 
 def create_DLO(sim, root, material_hard):
+
+
     # Rope parameters
     radious = 0.005  # meters
     resolution = 100  # segments per meter
@@ -189,7 +191,6 @@ def create_DLO(sim, root, material_hard):
     peg.add(agxCable.BodyFixedNode(sim.getRigidBody("gripper_r_base"), tf_0))
 
     freePos = sim.getRigidBody("gripper_r_base").getTransform().transformPoint(agx.Vec3(0.0, 0.1, 0.15))
-    print(freePos)
     peg.add(agxCable.FreeNode(freePos))
 
     tf_0 = agx.AffineMatrix4x4()
@@ -243,6 +244,7 @@ def create_DLO(sim, root, material_hard):
     agxUtil.setEnableCollisions(dlo,  sim.getAssembly('yumi').getRigidBody('gripper_l_finger_r'), False)
     agxUtil.setEnableCollisions(dlo,  sim.getAssembly('yumi').getRigidBody('gripper_l_finger_l'), False)
 
+
 def createWire(sim, root, material_hard):
     wireMaterial = agx.Material("WireMaterial")
     wireMaterial.getWireMaterial().setYoungsModulusStretch(200E9)
@@ -283,6 +285,7 @@ def createWire(sim, root, material_hard):
 
 
 def create_DLO_on_floor(sim, root, material_hard):
+
     # Rope parameters
     radious = 0.005  # meters
     resolution = 100  # segments per meter
@@ -343,6 +346,7 @@ def create_DLO_on_floor(sim, root, material_hard):
     dlo = agxCable.Cable.find(sim, "DLO")
     fl = agxOSG.createVisual(dlo, root)
 
+
 def create_wire_on_floor(sim, root, material_hard):
 
     wireMaterial = agx.Material("WireMaterial")
@@ -367,3 +371,28 @@ def create_wire_on_floor(sim, root, material_hard):
     # Give the bodies in the wire a lot of velocity damping so it does not vibrate
     wire.setLinearVelocityDamping(1)
     sim.add(wire)
+
+
+def create_capsule(sim, material, radius):
+    c = agxCollide.Geometry(agxCollide.Capsule(radius, 0.038))
+    c.setMaterial(material)
+    sim.add(c)
+    return c
+
+
+def replace_collision_geometry_with_capsules(sim, body, material):
+    # Disable the other collision geometries
+    for g in body.getGeometries():
+        g.setEnableCollisions(False)
+    capsule_radius = 0.001
+    c_l = create_capsule(sim, material, capsule_radius)
+    c_r = create_capsule(sim, material, capsule_radius)
+    o_l = agx.Vec3(-capsule_radius, 0.032, -0.003)
+    o_r = agx.Vec3(-capsule_radius, 0.032, -0.010)
+
+    t_l = agx.AffineMatrix4x4.translate(o_l) * agx.AffineMatrix4x4.rotate(agx.PI_2, agx.Vec3(1, 0, 0))
+    t_r = agx.AffineMatrix4x4.translate(o_r) * agx.AffineMatrix4x4.rotate(agx.PI_2, agx.Vec3(1, 0, 0))
+
+    body.add(c_l, t_l)
+    body.add(c_r, t_r)
+

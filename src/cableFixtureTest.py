@@ -5,7 +5,7 @@ from controller.msg import Trajectory_point, Trajectory_msg
 import tf
 import numpy as np
 
-CASE = 'fixture' # 'fixture' or 'grabDLO'
+CASE = 'grabDLO' # 'fixture' or 'grabDLO'
 
 def main():
 
@@ -36,8 +36,8 @@ def main():
 
     elif CASE == 'grabDLO':
         trajectoryPoint = Trajectory_point() # point 
-        trajectoryPoint.positionRight = [0.30, -0.10, 0.001] # poition right arm [m], yumi_base_link is the origin 
-        trajectoryPoint.positionLeft = [0.30, 0.10, 0.001]# poition left arm [m]
+        trajectoryPoint.positionRight = [0.30, -0.10, -0.003] # poition right arm [m], yumi_base_link is the origin
+        trajectoryPoint.positionLeft = [0.30, 0.10, -0.003]# poition left arm [m]
         trajectoryPoint.orientationLeft = [1,0,0,0] # orientation left arm, quaterniorns [x, y, z, w]
         trajectoryPoint.orientationRight = [1,0,0,0]# orientation right arm
         trajectoryPoint.gripperLeft = 20.0 # gripper width for the fingers [mm]
@@ -47,17 +47,17 @@ def main():
         trajectory = [trajectoryPoint]
 
         trajectoryPoint = Trajectory_point() # point 
-        trajectoryPoint.positionRight = [0.30, -0.10, 0.001] # poition right arm [m], yumi_base_link is the origin 
-        trajectoryPoint.positionLeft = [0.30, 0.10, 0.001]# poition left arm [m]
+        trajectoryPoint.positionRight = [0.30, -0.10, -0.003] # poition right arm [m], yumi_base_link is the origin
+        trajectoryPoint.positionLeft = [0.30, 0.10, -0.003]# poition left arm [m]
         trajectoryPoint.orientationLeft = [1,0,0,0] # orientation left arm, quaterniorns [x, y, z, w]
         trajectoryPoint.orientationRight = [1,0,0,0]# orientation right arm
         trajectoryPoint.gripperLeft = 0.0 # gripper width for the fingers [mm]
         trajectoryPoint.gripperRight = 0.0
-        trajectoryPoint.pointTime = 4.0 # time to get to this point [s]
+        trajectoryPoint.pointTime = 5.0 # time to get to this point [s]
         trajectory.append(trajectoryPoint)
 
         trajectoryPoint = Trajectory_point() # point 
-        trajectoryPoint.positionRight = [0.30, -0.10, 0.15] # poition right arm [m], yumi_base_link is the origin 
+        trajectoryPoint.positionRight = [0.30, -0.10, 0.15] # poition right arm [m], yumi_base_link is the origin
         trajectoryPoint.positionLeft = [0.30, 0.10, 0.15]# poition left arm [m]
         trajectoryPoint.orientationLeft = [1,0,0,0] # orientation left arm, quaterniorns [x, y, z, w]
         trajectoryPoint.orientationRight = [1,0,0,0]# orientation right arm
@@ -65,7 +65,52 @@ def main():
         trajectoryPoint.gripperRight = 0.0
         trajectoryPoint.pointTime = 8.0 # time to get to this point [s]
         trajectory.append(trajectoryPoint)
-    
+
+        trajectoryPoint = Trajectory_point()  # point
+        trajectoryPoint.positionRight = [0.37, -0.102, 0.15]  # poition right arm [m], yumi_base_link is the origin
+        trajectoryPoint.positionLeft = [0.37, 0.102, 0.15]  # poition left arm [m]
+        trajectoryPoint.orientationLeft = [1, 0, 0, 0]  # orientation left arm, quaterniorns [x, y, z, w]
+        trajectoryPoint.orientationRight = [1, 0, 0, 0]  # orientation right arm
+        trajectoryPoint.gripperLeft = 0.0  # gripper width for the fingers [mm]
+        trajectoryPoint.gripperRight = 0.0
+        trajectoryPoint.pointTime = 2.0  # time to get to this point [s]
+        trajectory.append(trajectoryPoint)
+
+
+        trajectoryPoint = Trajectory_point()  # point
+        trajectoryPoint.positionRight = [0.37, -0.102, 0.03]  # poition right arm [m], yumi_base_link is the origin
+        trajectoryPoint.positionLeft = [0.37, 0.102, 0.03]  # poition left arm [m]
+        trajectoryPoint.orientationLeft = [1, 0, 0, 0]  # orientation left arm, quaterniorns [x, y, z, w]
+        trajectoryPoint.orientationRight = [1, 0, 0, 0]  # orientation right arm
+        trajectoryPoint.gripperLeft = 0.0  # gripper width for the fingers [mm]
+        trajectoryPoint.gripperRight = 0.0
+        trajectoryPoint.pointTime = 8.0  # time to get to this point [s]
+        trajectory.append(trajectoryPoint)
+
+
+        trajectoryPoint = Trajectory_point()  # point
+        trajectoryPoint.positionRight = [0.37, -0.102, 0.03]  # poition right arm [m], yumi_base_link is the origin
+        trajectoryPoint.positionLeft = [0.37, 0.102, 0.03]  # poition left arm [m]
+        trajectoryPoint.orientationLeft = [1, 0, 0, 0]  # orientation left arm, quaterniorns [x, y, z, w]
+        trajectoryPoint.orientationRight = [1, 0, 0, 0]  # orientation right arm
+        trajectoryPoint.gripperLeft = 20.0  # gripper width for the fingers [mm]
+        trajectoryPoint.gripperRight = 20.0
+        trajectoryPoint.pointTime = 2.0  # time to get to this point [s]
+        trajectory.append(trajectoryPoint)
+
+
+        trajectoryPoint = Trajectory_point()  # point
+        trajectoryPoint.positionRight = [0.37, -0.10, 0.15]  # poition right arm [m], yumi_base_link is the origin
+        trajectoryPoint.positionLeft = [0.37, 0.10, 0.15]  # poition left arm [m]
+        trajectoryPoint.orientationLeft = [1, 0, 0, 0]  # orientation left arm, quaterniorns [x, y, z, w]
+        trajectoryPoint.orientationRight = [1, 0, 0, 0]  # orientation right arm
+        trajectoryPoint.gripperLeft = 20.0  # gripper width for the fingers [mm]
+        trajectoryPoint.gripperRight = 20.0
+        trajectoryPoint.pointTime = 2.0  # time to get to this point [s]
+
+        trajectory.append(trajectoryPoint)
+
+
     # ----------------------------
     msg.trajectory = trajectory
     
