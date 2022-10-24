@@ -59,7 +59,7 @@ source /opt/Algoryx/AGX-2.30.4.0/setup_env.bash
 ``` 
 * Start yumi Agx simulation
 ``` 
-rosrun agx_ros yumiAGX.py 
+rosrun agx_yumi_ros yumiAGX.py 
 ``` 
 
 * To test, publish a joint velocity [rad/s]

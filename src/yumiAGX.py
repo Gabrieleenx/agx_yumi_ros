@@ -36,7 +36,7 @@ except Exception as e:
 from agxPythonModules.utils.environment import simulation, root, application, init_app
 
 STEP_TIME = 1/120
-CASE = 'grabDLO' # 'fixture', 'fixtureWire', 'grabWire' or 'grabDLO'
+CASE = 'yumi' # 'yumi','fixture', 'fixtureWire', 'grabWire' or 'grabDLO'
 
 def rigidBodyGeometriesToList(rb):
     geometries = rb.getGeometries() # geometries is of type GeometryRefVector
@@ -72,7 +72,7 @@ class yumiRobot(agxSDK.StepEventListener):
         self.jointNamesRevolute = ['yumi_joint_1_l', 'yumi_joint_2_l', 'yumi_joint_7_l', 'yumi_joint_3_l', 'yumi_joint_4_l', 'yumi_joint_5_l', 'yumi_joint_6_l',\
                                  'yumi_joint_1_r', 'yumi_joint_2_r', 'yumi_joint_7_r', 'yumi_joint_3_r', 'yumi_joint_4_r', 'yumi_joint_5_r', 'yumi_joint_6_r']
        
-        self.jointEffort = [50,50,50,50,50,50,50,50,50,50,50,50,50,50] #maximum joint effort, assuming same force in upper and lower, same order as jointNamesRevolute
+        self.jointEffort = [200,200,150,120,100,100,50,200,200,150,120,100,100,50] #maximum joint effort, assuming same force in upper and lower, same order as jointNamesRevolute
         self.grpperEffort  = 25 # set the grip force
         self.jointNamesGrippers = ['gripper_l_joint', 'gripper_l_joint_m', 'gripper_r_joint', 'gripper_r_joint_m'] # name of gripper joints in urdf
         self.gripperPosition = [0,0,0,0] # used to store gripper commands until they are used
@@ -226,9 +226,9 @@ class yumiRobot(agxSDK.StepEventListener):
 
 def setupCamera(app):
     cameraData = app.getCameraData()
-    cameraData.eye = agx.Vec3(0.3, -1, 0.1)
-    cameraData.center = agx.Vec3(0.3, -0.0, 0.0)
-    cameraData.up = agx.Vec3(-0.2857, -0.0514, 0.9569)
+    cameraData.eye = agx.Vec3(2, 0, 1)
+    cameraData.center = agx.Vec3(0.0, -0.0, 0.2)
+    cameraData.up = agx.Vec3(0, -0, 0.2)
     cameraData.nearClippingPlane = 0.1
     cameraData.farClippingPlane = 5000
     app.applyCameraData(cameraData)
@@ -361,8 +361,6 @@ def buildScene():
         utils.create_wire_on_floor(sim, root, material_hard)
     else:
         pass
-    # not working 
-    #agxOSG.createAxes(yumi_assembly_ref.getConstraint('yumi_link_7_r_joint'), root, 1.0, agx.Vec4f(1,1,1,1))
 
     application().getSceneDecorator().setEnableShadows(True)
     setupCamera(app)
